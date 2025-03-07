@@ -3,18 +3,21 @@ import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
 import 'dart:math';
 
+import 'package:testapk/asset_player.dart';
+import 'package:testapk/utils.dart';
+
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late AudioPlayer _audioPlayer;
+  late AssetPlayer _audioPlayer;
 
   @override
   void initState() {
@@ -24,24 +27,35 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       vsync: this,
     )..repeat();
 
-    _audioPlayer = AudioPlayer();
-    _playMusic();
+    _prepareAssetPlayer();
+    _startAssetPlayer();
   }
 
-  Future<void> _playMusic() async {
-    await _audioPlayer.play(AssetSource('peremotka.mp3'));
+  Future<void> _prepareAssetPlayer() async {
+    List<String> audioList = await Utils.listAssets("audio");
+    print("Audio List");
+    print(audioList);
+    _audioPlayer = AssetPlayer.withInitialAsset(
+      audioList.map((String value) => AssetSource(value)).toList(),
+      initialAsset: "audio/peremotka.mp3",
+    );
+  }
+
+  Future<void> _startAssetPlayer() async {
+    await _audioPlayer.play();
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _audioPlayer.dispose();
+    _audioPlayer.audioPlayer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Stack(
           children: [
